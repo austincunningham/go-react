@@ -3,14 +3,18 @@ import (
 	"fmt"
 	"net/http"
 	"log"
-	"encoding/json"
+  "encoding/json"
+  "github.com/gorilla/mux"
 )
+//App struct
 type App struct {
   ID        string   `json:"id,omitempty"`
   Appname   string   `json:"Appname,omitempty"`
   Disabled  bool     `json:"disabled,omitempty"`
   Versions  *Versions `json:"versions,omitempty"`
 }
+
+//Versions struct
 type Versions struct {
   Version  string `json:"version,omitempty"`
   Disabled bool   `json:"Disabled,omitempty"`
@@ -18,27 +22,44 @@ type Versions struct {
 var apps []App
 
 func main() {
-  fmt.Println("http://localhost:8000")
+  fmt.Println("App served on http://localhost:8000")
   //populate the array
   apps = append(apps, App{ID: "1", Appname: "MDC", Disabled: false, Versions: &Versions{Version: "1.1.1", Disabled: false}})
   apps = append(apps, App{ID: "2", Appname: "Integreatly", Disabled: false, Versions: &Versions{Version: "1.0.1", Disabled: false}})
   apps = append(apps, App{ID: "3", Appname: "RHMAP", Disabled: true, Versions: &Versions{Version: "4.6.2", Disabled: true}})
 
-
+  // File server for public directroy
   http.Handle("/", http.FileServer(http.Dir("./public")))
   
-  //router.HandleFunc("/apps", GetAllApps).Methods("GET")
-  http.HandleFunc("/apps", GetAllApps)
-  http.HandleFunc("/apps/{id}", GetApp)
-  http.HandleFunc("/apps/{id}", UpdateApp)
+  router := mux.NewRouter()
+  router.HandleFunc("/apps", GetAllApps).Methods("GET")
+  router.HandleFunc("/apps/{id}", GetApp).Methods("GET")
+  router.HandleFunc("/apps/{id}", UpdateApp).Methods("PUT")
   
-  log.Fatal(http.ListenAndServe("localhost:8000", nil))
+  log.Fatal(http.ListenAndServe("localhost:8000", router))
   
 }
 
+//GetAllApps get
 func GetAllApps(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(apps)
+  fmt.Println("http://localhost:8000/apps")
+  json.NewEncoder(w).Encode(apps)
 }
 
-func GetApp(w http.ResponseWriter, r *http.Request) {}
-func UpdateApp(w http.ResponseWriter, r *http.Request) {}
+//GetApp get
+func GetApp(w http.ResponseWriter, r *http.Request) {
+  fmt.Println("http://localhost:8000/apps/{id} GET")
+  params := mux.Vars(r)
+  for _, item := range apps {
+      if item.ID == params["id"] {
+          json.NewEncoder(w).Encode(item)
+          return
+      }
+  }
+  json.NewEncoder(w).Encode(&App{})
+}
+
+//UpdateApp put
+func UpdateApp(w http.ResponseWriter, r *http.Request) {
+  fmt.Println("http://localhost:8000/apps/{id} PUT")
+}
