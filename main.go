@@ -54,7 +54,7 @@ func main() {
       DisableMessage: "Disabled by admin"}})
 
   // File server for public directroy
-  http.Handle("/", http.FileServer(http.Dir("./public")))
+  http.Handle("/", http.FileServer(http.Dir("./goreact/public")))
   
   // REST End points
   router := mux.NewRouter()
