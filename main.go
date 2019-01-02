@@ -25,7 +25,7 @@ var apps []App
 
 func main() {
   fmt.Println("App served on http://localhost:8000")
-  //populate the array
+  //populate the array hard coded at the moment 
   apps = append(apps, App{
     ID: "1",
     Appname: "MDC", 
@@ -56,6 +56,7 @@ func main() {
   // File server for public directroy
   http.Handle("/", http.FileServer(http.Dir("./public")))
   
+  // REST End points
   router := mux.NewRouter()
   router.HandleFunc("/apps", GetAllApps).Methods("GET")
   router.HandleFunc("/apps/{id}", GetApp).Methods("GET")
@@ -86,19 +87,44 @@ func GetApp(w http.ResponseWriter, r *http.Request) {
 
 //UpdateApp put
 func UpdateApp(w http.ResponseWriter, r *http.Request) {
+  defer r.Body.Close()
   params := mux.Vars(r)
+  var app App
   fmt.Println("http://localhost:8000/apps/{id} PUT id :", params["id"])
+  //fmt.Println("response.Body ==> ",json.NewDecoder(r.Body).Decode(&app))
+
+  if err := json.NewDecoder(r.Body).Decode(&app); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+  }
+  respondWithJson(w, http.StatusOK, map[string]string{"result": "success"})
   for _, item := range apps {
     if item.ID == params["id"] {
       // logic go in here for handeling the update e.g. {2 Integreatly false 0xc00000c320}
        fmt.Println(item.Versions.Disabled)
        fmt.Println(item.Versions.DisableMessage)
-       var disabled = &item.Versions.Disabled 
-       *disabled = true 
-       var disabledmessage = &item.Versions.DisableMessage
-       *disabledmessage = "Disabled by your admin"
-       fmt.Println(item.Versions.Disabled)
-       fmt.Println(item.Versions.DisableMessage)
+       fmt.Println(item.Versions)
+       // incoming content
+       fmt.Println(app.Versions.DisableMessage)
+       // hard coded when the PUT endpoint hit
+      //  var disabled = &item.Versions.Disabled 
+      //  *disabled = true 
+      //  var disabledmessage = &item.Versions.DisableMessage
+      //  *disabledmessage = "Disabled by your admin"
+      //  fmt.Println(item.Versions.Disabled)
+      //  fmt.Println(item.Versions.DisableMessage)
     }
   }
 }
+
+func respondWithError(w http.ResponseWriter, code int, msg string) {
+	respondWithJson(w, code, map[string]string{"error": msg})
+}
+
+func respondWithJson(w http.ResponseWriter, code int, payload interface{}) {
+	response, _ := json.Marshal(payload)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(response)
+}
+
