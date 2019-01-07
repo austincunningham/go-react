@@ -1,5 +1,6 @@
 package main
 import ( 
+  "strconv"
   "database/sql"
   _ "github.com/lib/pq"
 	"fmt"
@@ -90,7 +91,7 @@ func GetApp(w http.ResponseWriter, r *http.Request) {
   //     }
   // }
   // json.NewEncoder(w).Encode(&App{})
-  var err error
+
   var id int
   var appname, globaldisablemessage string
   var disabled bool
@@ -100,11 +101,18 @@ func GetApp(w http.ResponseWriter, r *http.Request) {
   case sql.ErrNoRows:
     fmt.Println("No rows were returned")
   case nil:
+    var app App
+    // string casting , god i hate strongly typed languages
+    app.ID = strconv.Itoa(id)
+    app.Appname = appname
+    app.Disabled = disabled
+    app.GlobalDisableMessage = globaldisablemessage
     fmt.Println(id, appname, disabled, globaldisablemessage)
+    json.NewEncoder(w).Encode(app)
+    return
   default:
     panic(err)
   }
-  fmt.Println(err)
 }
 
 //UpdateApp put
