@@ -41,32 +41,7 @@ func main() {
 
   fmt.Println("App served on http://localhost:8000")
   //populate the array hard coded at the moment 
-  apps = append(apps, App{
-    ID: "1",
-    Appname: "MDC", 
-    Disabled: false, 
-    GlobalDisableMessage: "Disabled", 
-    Versions: &Versions{
-      Version: "1.1.1", 
-      Disabled: false}})
-  apps = append(apps, App{
-    ID: "2", 
-    Appname: "Integreatly", 
-    Disabled: false,
-    GlobalDisableMessage: "Disabled", 
-    Versions: &Versions{
-      Version: "1.0.1", 
-      Disabled: false,
-      DisableMessage: "Disabled by admin"}})
-  apps = append(apps, App{
-    ID: "3", 
-    Appname: "RHMAP", 
-    Disabled: true,
-    GlobalDisableMessage: "Disabled", 
-    Versions: &Versions{
-      Version: "4.6.2", 
-      Disabled: true,
-      DisableMessage: "Disabled by admin"}})
+  populateArray()
 
   // File server for public directroy
   http.Handle("/", http.FileServer(http.Dir("./goreact/public")))
@@ -159,3 +134,32 @@ func respondWithJson(w http.ResponseWriter, code int, payload interface{}) {
 	w.Write(response)
 }
 
+
+func populateArray(){
+  apps = append(apps, App{
+    ID: "1",
+    Appname: "MDC", 
+    Disabled: false, 
+    GlobalDisableMessage: "Disabled", 
+    Versions: &Versions{
+      Version: "1.1.1", 
+      Disabled: false}})
+  apps = append(apps, App{
+    ID: "2", 
+    Appname: "Integreatly", 
+    Disabled: false,
+    GlobalDisableMessage: "Disabled", 
+    Versions: &Versions{
+      Version: "1.0.1", 
+      Disabled: false,
+      DisableMessage: "Disabled by admin"}})
+  apps = append(apps, App{
+    ID: "3", 
+    Appname: "RHMAP", 
+    Disabled: true,
+    GlobalDisableMessage: "Disabled", 
+    Versions: &Versions{
+      Version: "4.6.2", 
+      Disabled: true,
+      DisableMessage: "Disabled by admin"}})
+}
