@@ -82,13 +82,29 @@ func GetAllApps(w http.ResponseWriter, r *http.Request) {
 func GetApp(w http.ResponseWriter, r *http.Request) {
   params := mux.Vars(r)
   fmt.Println("http://localhost:8000/apps/{id} GET id :", params["id"])
-  for _, item := range apps {
-      if item.ID == params["id"] {
-          json.NewEncoder(w).Encode(item)
-          return
-      }
+  // pulling data from static object
+  // for _, item := range apps {
+  //     if item.ID == params["id"] {
+  //         json.NewEncoder(w).Encode(item)
+  //         return
+  //     }
+  // }
+  // json.NewEncoder(w).Encode(&App{})
+  var err error
+  var id int
+  var appname, globaldisablemessage string
+  var disabled bool
+  sqlStatment := `SELECT id, appname, disabled, globaldisablemessage FROM apps WHERE id=$1;`
+  row := db.QueryRow(sqlStatment, params["id"])
+  switch err := row.Scan(&id, &appname, &disabled, &globaldisablemessage); err{
+  case sql.ErrNoRows:
+    fmt.Println("No rows were returned")
+  case nil:
+    fmt.Println(id, appname, disabled, globaldisablemessage)
+  default:
+    panic(err)
   }
-  json.NewEncoder(w).Encode(&App{})
+  fmt.Println(err)
 }
 
 //UpdateApp put
@@ -136,8 +152,8 @@ func respondWithJson(w http.ResponseWriter, code int, payload interface{}) {
 
 
 func populateArray(){
-  var err error
-  //populate the array hard coded at the moment 
+  //var err error
+  //populate the array hard coded mock data at the moment 
   apps = append(apps, App{
     ID: "1",
     Appname: "MDC", 
@@ -165,20 +181,21 @@ func populateArray(){
       Disabled: true,
       DisableMessage: "Disabled by admin"}})
   // insert data into postgres     
-  for _, item := range apps {
-    
-    sqlStatment := `INSERT INTO apps (id, appname, disabled, globaldisablemessage)
-    VALUES ($1, $2, $3, $4)
-    RETURNING id;`
-    //fmt.Println(sqlStatment, item.ID, item.Appname, item.Disabled, item.GlobalDisableMessage)
-    id :=0
-    err = db.QueryRow(sqlStatment, item.ID, item.Appname, item.Disabled, item.GlobalDisableMessage).Scan(&id)
-    if err != nil {
-      fmt.Println("Insert failed")
-      panic(err)
-    }
-    fmt.Println("New record ID is :", id)
-  }
+  // for _, item := range apps {
+  //   // remove id as its a primary key 
+  //   sqlStatment := `INSERT INTO apps (id, appname, disabled, globaldisablemessage)
+  //   VALUES ($1, $2, $3, $4)
+  //   RETURNING id;`
+  //   //fmt.Println(sqlStatment, item.ID, item.Appname, item.Disabled, item.GlobalDisableMessage)
+  //   id :=0
+  //   err = db.QueryRow(sqlStatment, item.ID, item.Appname, item.Disabled, item.GlobalDisableMessage).Scan(&id)
+  //   if err != nil {
+  //     fmt.Println("Insert failed")
+  //     fmt.Println(err)
+  //     panic(err)
+  //   }
+  //   fmt.Println("New record ID is :", id)
+  // }
 
     
 }
