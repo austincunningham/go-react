@@ -1,10 +1,22 @@
 package main
 import ( 
+  "database/sql"
+  _ "github.com/lib/pq"
 	"fmt"
 	"net/http"
 	"log"
   "encoding/json"
   "github.com/gorilla/mux"
+)
+// setting up database vars, not best practice as insecure to put vars for db in code, 
+// better practice would be env vars
+var db *sql.DB
+const (
+  dbhost = "localhost"
+  dbport = "5432"
+  dbuser = "postgres"
+  dbpass = "password"
+  dbname = "postgres"
 )
 //App struct
 type App struct {
@@ -24,6 +36,9 @@ type Versions struct {
 var apps []App
 
 func main() {
+  dbConnect()
+  defer db.Close()
+
   fmt.Println("App served on http://localhost:8000")
   //populate the array hard coded at the moment 
   apps = append(apps, App{
@@ -64,6 +79,22 @@ func main() {
   
   log.Fatal(http.ListenAndServe("localhost:8000", router))
   
+}
+// connect to the postgres db
+func dbConnect(){
+  var err error
+  psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
+  "password=%s dbname=%s sslmode=disable", dbhost, dbport, dbuser, dbpass, dbname)
+  
+  db, err := sql.Open("postgres", psqlInfo)
+  if err != nil {
+    panic(err)
+  }
+  err = db.Ping()
+  if err != nil {
+      panic(err)
+  }
+  fmt.Println("Successfully connected to Posgres DB!")
 }
 
 //GetAllApps get
