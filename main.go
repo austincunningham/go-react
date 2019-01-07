@@ -61,7 +61,7 @@ func dbConnect(){
   psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
   "password=%s dbname=%s sslmode=disable", dbhost, dbport, dbuser, dbpass, dbname)
   
-  db, err := sql.Open("postgres", psqlInfo)
+  db, err = sql.Open("postgres", psqlInfo)
   if err != nil {
     panic(err)
   }
@@ -136,6 +136,8 @@ func respondWithJson(w http.ResponseWriter, code int, payload interface{}) {
 
 
 func populateArray(){
+  var err error
+  //populate the array hard coded at the moment 
   apps = append(apps, App{
     ID: "1",
     Appname: "MDC", 
@@ -162,4 +164,21 @@ func populateArray(){
       Version: "4.6.2", 
       Disabled: true,
       DisableMessage: "Disabled by admin"}})
+  // insert data into postgres     
+  for _, item := range apps {
+    
+    sqlStatment := `INSERT INTO apps (id, appname, disabled, globaldisablemessage)
+    VALUES ($1, $2, $3, $4)
+    RETURNING id;`
+    //fmt.Println(sqlStatment, item.ID, item.Appname, item.Disabled, item.GlobalDisableMessage)
+    id :=0
+    err = db.QueryRow(sqlStatment, item.ID, item.Appname, item.Disabled, item.GlobalDisableMessage).Scan(&id)
+    if err != nil {
+      fmt.Println("Insert failed")
+      panic(err)
+    }
+    fmt.Println("New record ID is :", id)
+  }
+
+    
 }
