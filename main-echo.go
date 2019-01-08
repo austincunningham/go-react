@@ -59,7 +59,13 @@ func GetAllApps(c echo.Context) error {
 func GetApp(c echo.Context) error {
 	id := c.Param("id")
 	fmt.Println("id passed in : ",id)
-	return c.JSON(http.StatusOK, id)
+	// using hard coded data
+	for _, item := range apps {
+		if item.ID == id {
+			return c.JSON(http.StatusOK, item)
+		}
+	}
+	return c.JSON(http.StatusBadRequest, id)
 }
 
 // no real difference here
