@@ -36,14 +36,25 @@ var apps []App
 
 func main(){
 	dbConnect()
+	defer db.Close()
+	populateArray()
 
 	router := echo.New()
 	router.GET("/", func(c echo.Context) error{
 		return c.String(http.StatusOK, "hello world!")
 	})
+	 
+	router.GET("/apps", GetAllApps)
+
 	router.Logger.Fatal(router.Start(":8001"))
 }
 
+// GetAllApps
+func GetAllApps(c echo.Context) error {
+	return c.JSON(http.StatusOK, apps)
+}
+
+// no real difference here
 func dbConnect(){
 	var err error
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
@@ -51,6 +62,7 @@ func dbConnect(){
 	
 	db, err = sql.Open("postgres", psqlInfo)
 	if err != nil {
+		//using panic may not be best practice
 		panic(err)
 	}
 	err = db.Ping()
@@ -58,4 +70,35 @@ func dbConnect(){
 		panic(err)
 	}
 	fmt.Println("Successfully connected to Posgres DB!")
+}
+
+func populateArray(){
+	//var err error
+	//populate the array hard coded mock data at the moment 
+	apps = append(apps, App{
+	  ID: "1",
+	  Appname: "MDC", 
+	  Disabled: false, 
+	  GlobalDisableMessage: "Disabled", 
+	  Versions: &Versions{
+		Version: "1.1.1", 
+		Disabled: false}})
+	apps = append(apps, App{
+	  ID: "2", 
+	  Appname: "Integreatly", 
+	  Disabled: false,
+	  GlobalDisableMessage: "Disabled", 
+	  Versions: &Versions{
+		Version: "1.0.1", 
+		Disabled: false,
+		DisableMessage: "Disabled by admin"}})
+	apps = append(apps, App{
+	  ID: "3", 
+	  Appname: "RHMAP", 
+	  Disabled: true,
+	  GlobalDisableMessage: "Disabled", 
+	  Versions: &Versions{
+		Version: "4.6.2", 
+		Disabled: true,
+		DisableMessage: "Disabled by admin"}})
 }
