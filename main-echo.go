@@ -7,7 +7,7 @@ import(
 	"fmt"
 	_"github.com/lib/pq"
 )
-
+// posgres vars
 var db *sql.DB
 const (
   dbhost = "localhost"
@@ -16,6 +16,23 @@ const (
   dbpass = "password"
   dbname = "postgres"
 )
+
+//App struct
+type App struct {
+	ID        string   `json:"id,omitempty"`
+	Appname   string   `json:"Appname,omitempty"`
+	Disabled  bool     `json:"disabled,omitempty"`
+	GlobalDisableMessage string `json:"globalDisableMessage,omitempty"`
+	Versions  *Versions `json:"versions,omitempty"`
+  }
+  
+//Versions struct
+type Versions struct {
+Version  string `json:"version,omitempty"`
+Disabled bool   `json:"disabled,omitempty"`
+DisableMessage string `json:"disableMessage,omitempty"`
+}
+var apps []App
 
 func main(){
 	dbConnect()
