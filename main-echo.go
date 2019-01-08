@@ -45,13 +45,21 @@ func main(){
 	})
 	 
 	router.GET("/apps", GetAllApps)
+	router.GET("/apps/:id", GetApp)
 
 	router.Logger.Fatal(router.Start(":8001"))
 }
 
-// GetAllApps
+// GetAllApps gets all apps
 func GetAllApps(c echo.Context) error {
 	return c.JSON(http.StatusOK, apps)
+}
+
+// GetApp gets an app by id
+func GetApp(c echo.Context) error {
+	id := c.Param("id")
+	fmt.Println("id passed in : ",id)
+	return c.JSON(http.StatusOK, id)
 }
 
 // no real difference here
