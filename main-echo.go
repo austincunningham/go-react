@@ -98,12 +98,6 @@ func GetApp(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-    // string casting
-    // app.ID = strconv.Itoa(id)
-    // app.Appname = appname
-    // app.Disabled = disabled
-    // app.GlobalDisableMessage = globaldisablemessage
-    // fmt.Println(id, appname, disabled, globaldisablemessage)
 	return c.JSON(http.StatusOK, app)
 }
 
