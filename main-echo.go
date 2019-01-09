@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-
 	"github.com/labstack/echo"
 	_ "github.com/lib/pq"
 )
@@ -50,7 +49,7 @@ func main() {
 
 	router.GET("/apps", GetAllApps)
 	router.GET("/apps/:id", GetApp)
-	//router.PUT("/apps/:id",)
+	router.PUT("/apps/:id", UpdateApp)
 
 	router.Logger.Fatal(router.Start(":8001"))
 }
@@ -99,6 +98,27 @@ func GetApp(c echo.Context) error {
 		return err
 	}
 	return c.JSON(http.StatusOK, app)
+}
+
+// UpdateApp based on id app/:id
+func UpdateApp(c echo.Context) error {
+	id := c.Param("id")
+	fmt.Println("id passed in : ", id)
+	var app = new(App)
+	if err := c.Bind(app); err != nil {
+		fmt.Println(err)
+		return err
+	}
+	sqlStatment := "UPDATE apps SET appname=$1, disabled=$2, globaldisablemessage=$3 WHERE id=$4"
+	res, err := db.Query(sqlStatment, app.Appname, app.Disabled, app.GlobalDisableMessage, app.ID)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(res)
+		return c.JSON(http.StatusCreated, app)
+	}
+
+	return c.JSON(http.StatusOK, app.ID)
 }
 
 // no real difference here
