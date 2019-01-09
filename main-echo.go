@@ -50,6 +50,7 @@ func main() {
 	router.GET("/apps", GetAllApps)
 	router.GET("/apps/:id", GetApp)
 	router.PUT("/apps/:id", UpdateApp)
+	router.POST("/apps", CreateApp)
 
 	router.Logger.Fatal(router.Start(":8001"))
 }
@@ -119,6 +120,26 @@ func UpdateApp(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, app.ID)
+}
+
+// CreateApp post json to create app in postgres db
+func CreateApp(c echo.Context) error {
+	var app = new(App)
+	if err := c.Bind(app); err != nil {
+		fmt.Println(err)
+		return err
+	}
+	sqlStatment := "INSERT INTO apps (appname, disabled, globaldisablemessage)VALUES ($1,$2,$3)"
+	res, err :=db.Query(sqlStatment,app.Appname, app.Disabled, app.GlobalDisableMessage)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(res)
+		return c.JSON(http.StatusCreated, app)
+	}
+
+	return c.JSON(http.StatusOK, app.ID)
+
 }
 
 // no real difference here
