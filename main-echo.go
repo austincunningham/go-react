@@ -101,7 +101,13 @@ func GetApp(c echo.Context) error {
 	return c.JSON(http.StatusOK, app)
 }
 
-// UpdateApp based on id app/:id
+// UpdateApp based on id app/:id, e.g. object
+// {
+//  "id":"1"
+// 	"Appname": "Minishift-RHMAP",
+// 	"Disabled": true,
+// 	"globalDisableMessage": "disabled by API insomnia"
+// }
 func UpdateApp(c echo.Context) error {
 	id := c.Param("id")
 	fmt.Println("id passed in : ", id)
@@ -122,7 +128,12 @@ func UpdateApp(c echo.Context) error {
 	return c.JSON(http.StatusOK, app.ID)
 }
 
-// CreateApp post json to create app in postgres db
+// CreateApp post json to create app in postgres db e.g. object
+// {
+// 	"Appname": "Minishift-RHMAP",
+// 	"Disabled": true,
+// 	"globalDisableMessage": "disabled by API insomnia"
+// }
 func CreateApp(c echo.Context) error {
 	var app = new(App)
 	if err := c.Bind(app); err != nil {
