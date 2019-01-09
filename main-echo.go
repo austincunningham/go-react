@@ -46,13 +46,34 @@ func main(){
 	 
 	router.GET("/apps", GetAllApps)
 	router.GET("/apps/:id", GetApp)
+	//router.PUT("/apps/:id",)
 
 	router.Logger.Fatal(router.Start(":8001"))
 }
 
 // GetAllApps gets all apps
 func GetAllApps(c echo.Context) error {
-	return c.JSON(http.StatusOK, apps)
+	// returning static apps array
+	//return c.JSON(http.StatusOK, apps)
+	sqlStatment := "SELECT id, appname, disabled, globaldisablemessage FROM apps order by id"
+	rows, err := db.Query(sqlStatment)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer rows.Close()
+	
+	var result []App
+
+	for rows.Next(){
+		var app App
+		err2 := rows.Scan(&app.ID,&app.Appname,&app.Disabled,&app.GlobalDisableMessage)
+		if err2 != nil {
+			return err2
+		}
+	 	result = append(result, app)
+	}
+	return c.JSON(http.StatusOK, result)
+
 }
 
 // GetApp gets an app by id
