@@ -1,14 +1,14 @@
 package handlers
 
 import (
-	"database/sql"
 	"fmt"
 	"net/http"
 	"github.com/labstack/echo"
 	_ "github.com/lib/pq"
+	"github.com/austincunningham/go-react/pkg/db"
 )
 
-var db *sql.DB
+var d = db.DBconnect()
 //App struct
 type App struct {
 	ID                   string    `json:"id,omitempty"`
@@ -31,7 +31,7 @@ var apps []App
 func GetAllApps(c echo.Context) error {
 	// returning static apps array
 	sqlStatment := "SELECT id, appname, disabled, globaldisablemessage FROM apps order by id"
-	rows, err := db.Query(sqlStatment)
+	rows, err := d.Query(sqlStatment)
 	if err != nil {
 		fmt.Println(err)
 	}
