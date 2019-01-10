@@ -42,6 +42,7 @@ func main() {
 	defer db.Close()
 
 	router := echo.New()
+	// non database route
 	router.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "hello world!")
 	})
@@ -58,7 +59,6 @@ func main() {
 // GetAllApps gets all apps
 func GetAllApps(c echo.Context) error {
 	// returning static apps array
-	//return c.JSON(http.StatusOK, apps)
 	sqlStatment := "SELECT id, appname, disabled, globaldisablemessage FROM apps order by id"
 	rows, err := db.Query(sqlStatment)
 	if err != nil {
@@ -160,7 +160,7 @@ func DeleteApp(c echo.Context) error {
 	return c.JSON(http.StatusOK, "Deleted")
 }
 
-// no real difference here
+// DbConnect Connect to postgres database
 func dbConnect() {
 	var err error
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
