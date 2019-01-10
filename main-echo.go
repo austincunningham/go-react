@@ -40,7 +40,6 @@ var apps []App
 func main() {
 	dbConnect()
 	defer db.Close()
-	populateArray()
 
 	router := echo.New()
 	router.GET("/", func(c echo.Context) error {
@@ -86,13 +85,6 @@ func GetApp(c echo.Context) error {
 	id := c.Param("id")
 	fmt.Println("id passed in : ", id)
 	var app App
-	// using hard coded data
-	// for _, item := range apps {
-	// 	if item.ID == id {
-	// 		return c.JSON(http.StatusOK, item)
-	// 	}
-	// }
-	// return c.JSON(http.StatusBadRequest, id)
 	sqlStatment := `SELECT id, appname, disabled, globaldisablemessage FROM apps WHERE id=$1;`
 	row := db.QueryRow(sqlStatment, id)
 	err := row.Scan(&app.ID, &app.Appname, &app.Disabled, &app.GlobalDisableMessage)
@@ -184,35 +176,4 @@ func dbConnect() {
 		panic(err)
 	}
 	fmt.Println("Successfully connected to Posgres DB!")
-}
-
-func populateArray() {
-	//var err error
-	//populate the array hard coded mock data at the moment
-	apps = append(apps, App{
-		ID:                   "1",
-		Appname:              "MDC",
-		Disabled:             false,
-		GlobalDisableMessage: "Disabled",
-		Versions: &Versions{
-			Version:  "1.1.1",
-			Disabled: false}})
-	apps = append(apps, App{
-		ID:                   "2",
-		Appname:              "Integreatly",
-		Disabled:             false,
-		GlobalDisableMessage: "Disabled",
-		Versions: &Versions{
-			Version:        "1.0.1",
-			Disabled:       false,
-			DisableMessage: "Disabled by admin"}})
-	apps = append(apps, App{
-		ID:                   "3",
-		Appname:              "RHMAP",
-		Disabled:             true,
-		GlobalDisableMessage: "Disabled",
-		Versions: &Versions{
-			Version:        "4.6.2",
-			Disabled:       true,
-			DisableMessage: "Disabled by admin"}})
 }
