@@ -24,21 +24,7 @@ func main() {
 	router.GET("/apps/:id", handlers.GetApp)
 	router.PUT("/apps/:id", handlers.UpdateApp)
 	router.POST("/apps", handlers.CreateApp)
-	// router.DELETE("/apps/:id", DeleteApp)
+	router.DELETE("/apps/:id", handlers.DeleteApp)
 
 	router.Logger.Fatal(router.Start(":8001"))
 }
-
-// // DeleteApp delete app by id app/:id
-// func DeleteApp(c echo.Context) error {
-// 	id := c.Param("id")
-// 	sqlStatment := "DELETE FROM apps WHERE id = $1"
-// 	res, err := d.Query(sqlStatment, id)
-// 	if err != nil{
-// 		fmt.Println(err)
-// 	} else {
-// 		fmt.Println(res)
-// 		return c.JSON(http.StatusOK, "Deleted")
-// 	}
-// 	return c.JSON(http.StatusOK, "Deleted")
-// }
