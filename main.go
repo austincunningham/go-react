@@ -1,209 +1,152 @@
 package main
-import ( 
-  "strconv"
-  "database/sql"
-  _ "github.com/lib/pq"
-	"fmt"
+
+import (
 	"net/http"
-	"log"
-  "encoding/json"
-  "github.com/gorilla/mux"
-)
-// setting up database vars, not best practice as insecure to put vars for db in code, 
-// better practice would be env vars
-var db *sql.DB
-const (
-  dbhost = "localhost"
-  dbport = "5432"
-  dbuser = "postgres"
-  dbpass = "password"
-  dbname = "postgres"
-)
-//App struct
-type App struct {
-  ID        string   `json:"id,omitempty"`
-  Appname   string   `json:"Appname,omitempty"`
-  Disabled  bool     `json:"disabled,omitempty"`
-  GlobalDisableMessage string `json:"globalDisableMessage,omitempty"`
-  Versions  *Versions `json:"versions,omitempty"`
-}
+	"github.com/labstack/echo"
+	_ "github.com/lib/pq"
+	"github.com/austincunningham/go-react/pkg/db"
+	"github.com/austincunningham/go-react/pkg/handlers"
 
-//Versions struct
-type Versions struct {
-  Version  string `json:"version,omitempty"`
-  Disabled bool   `json:"disabled,omitempty"`
-  DisableMessage string `json:"disableMessage,omitempty"`
-}
-var apps []App
+)
 
+// //App struct
+// type App struct {
+// 	ID                   string    `json:"id,omitempty"`
+// 	Appname              string    `json:"Appname,omitempty"`
+// 	Disabled             bool      `json:"disabled,omitempty"`
+// 	GlobalDisableMessage string    `json:"globalDisableMessage,omitempty"`
+// 	Versions             *Versions `json:"versions,omitempty"`
+// }
+
+// //Versions struct
+// type Versions struct {
+// 	Version        string `json:"version,omitempty"`
+// 	Disabled       bool   `json:"disabled,omitempty"`
+// 	DisableMessage string `json:"disableMessage,omitempty"`
+// }
+
+//var apps []App
+var d = db.DBconnect()
 func main() {
-  dbConnect()
-  defer db.Close()
+	//d := db.DBconnect()
+	defer d.Close()
 
-  fmt.Println("App served on http://localhost:8000")
-  //populate the array hard coded at the moment 
-  populateArray()
+	router := echo.New()
+	// non database route
+	router.GET("/", func(c echo.Context) error {
+		return c.String(http.StatusOK, "hello world!")
+	})
 
-  // File server for public directroy
-  http.Handle("/", http.FileServer(http.Dir("./goreact/public")))
-  
-  // REST End points
-  router := mux.NewRouter()
-  router.HandleFunc("/apps", GetAllApps).Methods("GET")
-  router.HandleFunc("/apps/{id}", GetApp).Methods("GET")
-  router.HandleFunc("/apps/{id}", UpdateApp).Methods("PUT")
-  
-  log.Fatal(http.ListenAndServe("localhost:8000", router))
-  
-}
-// connect to the postgres db
-func dbConnect(){
-  var err error
-  psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
-  "password=%s dbname=%s sslmode=disable", dbhost, dbport, dbuser, dbpass, dbname)
-  
-  db, err = sql.Open("postgres", psqlInfo)
-  if err != nil {
-    panic(err)
-  }
-  err = db.Ping()
-  if err != nil {
-      panic(err)
-  }
-  fmt.Println("Successfully connected to Posgres DB!")
+	router.GET("/apps", handlers.GetAllApps)
+	// router.GET("/apps/:id", GetApp)
+	// router.PUT("/apps/:id", UpdateApp)
+	// router.POST("/apps", CreateApp)
+	// router.DELETE("/apps/:id", DeleteApp)
+
+	router.Logger.Fatal(router.Start(":8001"))
 }
 
-//GetAllApps get
-func GetAllApps(w http.ResponseWriter, r *http.Request) {
-  fmt.Println("http://localhost:8000/apps")
-  json.NewEncoder(w).Encode(apps)
-}
+// // GetAllApps gets all apps
+// func GetAllApps(c echo.Context) error {
+// 	// returning static apps array
+// 	sqlStatment := "SELECT id, appname, disabled, globaldisablemessage FROM apps order by id"
+// 	rows, err := d.Query(sqlStatment)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
+// 	defer rows.Close()
 
-//GetApp get
-func GetApp(w http.ResponseWriter, r *http.Request) {
-  params := mux.Vars(r)
-  fmt.Println("http://localhost:8000/apps/{id} GET id :", params["id"])
-  // pulling data from static object
-  // for _, item := range apps {
-  //     if item.ID == params["id"] {
-  //         json.NewEncoder(w).Encode(item)
-  //         return
-  //     }
-  // }
-  // json.NewEncoder(w).Encode(&App{})
+// 	// creates a new object from return from postgres
+// 	var result []App
+// 	for rows.Next() {
+// 		var app App
+// 		err2 := rows.Scan(&app.ID, &app.Appname, &app.Disabled, &app.GlobalDisableMessage)
+// 		if err2 != nil {
+// 			return err2
+// 		}
+// 		result = append(result, app)
+// 	}
+// 	// returns new object
+// 	return c.JSON(http.StatusOK, result)
+// }
 
-  var id int
-  var appname, globaldisablemessage string
-  var disabled bool
-  sqlStatment := `SELECT id, appname, disabled, globaldisablemessage FROM apps WHERE id=$1;`
-  row := db.QueryRow(sqlStatment, params["id"])
-  switch err := row.Scan(&id, &appname, &disabled, &globaldisablemessage); err{
-  case sql.ErrNoRows:
-    fmt.Println("No rows were returned")
-  case nil:
-    var app App
-    // string casting , god i hate strongly typed languages
-    app.ID = strconv.Itoa(id)
-    app.Appname = appname
-    app.Disabled = disabled
-    app.GlobalDisableMessage = globaldisablemessage
-    fmt.Println(id, appname, disabled, globaldisablemessage)
-    json.NewEncoder(w).Encode(app)
-    return
-  default:
-    panic(err)
-  }
-}
+// // GetApp gets an app by id
+// func GetApp(c echo.Context) error {
+// 	id := c.Param("id")
+// 	fmt.Println("id passed in : ", id)
+// 	var app App
+// 	sqlStatment := `SELECT id, appname, disabled, globaldisablemessage FROM apps WHERE id=$1;`
+// 	row := d.QueryRow(sqlStatment, id)
+// 	err := row.Scan(&app.ID, &app.Appname, &app.Disabled, &app.GlobalDisableMessage)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return c.JSON(http.StatusOK, app)
+// }
 
-//UpdateApp put
-func UpdateApp(w http.ResponseWriter, r *http.Request) {
-  defer r.Body.Close()
-  params := mux.Vars(r)
-  var app App
-  fmt.Println("http://localhost:8000/apps/{id} PUT id :", params["id"])
-  //fmt.Println("response.Body ==> ",json.NewDecoder(r.Body).Decode(&app))
+// // UpdateApp based on id app/:id, e.g. object
+// // {
+// //  "id":"1"
+// // 	"Appname": "Minishift-RHMAP",
+// // 	"Disabled": true,
+// // 	"globalDisableMessage": "disabled by API insomnia"
+// // }
+// func UpdateApp(c echo.Context) error {
+// 	id := c.Param("id")
+// 	fmt.Println("id passed in : ", id)
+// 	var app = new(App)
+// 	if err := c.Bind(app); err != nil {
+// 		fmt.Println(err)
+// 		return err
+// 	}
+// 	sqlStatment := "UPDATE apps SET appname=$1, disabled=$2, globaldisablemessage=$3 WHERE id=$4"
+// 	res, err := d.Query(sqlStatment, app.Appname, app.Disabled, app.GlobalDisableMessage, app.ID)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	} else {
+// 		fmt.Println(res)
+// 		return c.JSON(http.StatusCreated, app)
+// 	}
 
-  if err := json.NewDecoder(r.Body).Decode(&app); err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
-		return
-  }
-  respondWithJson(w, http.StatusOK, map[string]string{"result": "success"})
-  for _, item := range apps {
-    if item.ID == params["id"] {
-      // logic go in here for handeling the update e.g. {2 Integreatly false 0xc00000c320}
-       fmt.Println(item.Versions.Disabled)
-       fmt.Println(item.Versions.DisableMessage)
-       fmt.Println(item.Versions)
-       // incoming content
-       fmt.Println(app.Versions.DisableMessage)
-       // hard coded when the PUT endpoint hit
-      //  var disabled = &item.Versions.Disabled 
-      //  *disabled = true 
-      //  var disabledmessage = &item.Versions.DisableMessage
-      //  *disabledmessage = "Disabled by your admin"
-      //  fmt.Println(item.Versions.Disabled)
-      //  fmt.Println(item.Versions.DisableMessage)
-    }
-  }
-}
+// 	return c.JSON(http.StatusOK, app.ID)
+// }
 
-func respondWithError(w http.ResponseWriter, code int, msg string) {
-	respondWithJson(w, code, map[string]string{"error": msg})
-}
+// // CreateApp post json to create app in postgres db e.g. object
+// // {
+// // 	"Appname": "Minishift-RHMAP",
+// // 	"Disabled": true,
+// // 	"globalDisableMessage": "disabled by API insomnia"
+// // }
+// func CreateApp(c echo.Context) error {
+// 	var app = new(App)
+// 	if err := c.Bind(app); err != nil {
+// 		fmt.Println(err)
+// 		return err
+// 	}
+// 	sqlStatment := "INSERT INTO apps (appname, disabled, globaldisablemessage)VALUES ($1,$2,$3)"
+// 	res, err :=d.Query(sqlStatment,app.Appname, app.Disabled, app.GlobalDisableMessage)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	} else {
+// 		fmt.Println(res)
+// 		return c.JSON(http.StatusCreated, app)
+// 	}
 
-func respondWithJson(w http.ResponseWriter, code int, payload interface{}) {
-	response, _ := json.Marshal(payload)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	w.Write(response)
-}
+// 	return c.JSON(http.StatusOK, app.ID)
 
+// }
 
-func populateArray(){
-  //var err error
-  //populate the array hard coded mock data at the moment 
-  apps = append(apps, App{
-    ID: "1",
-    Appname: "MDC", 
-    Disabled: false, 
-    GlobalDisableMessage: "Disabled", 
-    Versions: &Versions{
-      Version: "1.1.1", 
-      Disabled: false}})
-  apps = append(apps, App{
-    ID: "2", 
-    Appname: "Integreatly", 
-    Disabled: false,
-    GlobalDisableMessage: "Disabled", 
-    Versions: &Versions{
-      Version: "1.0.1", 
-      Disabled: false,
-      DisableMessage: "Disabled by admin"}})
-  apps = append(apps, App{
-    ID: "3", 
-    Appname: "RHMAP", 
-    Disabled: true,
-    GlobalDisableMessage: "Disabled", 
-    Versions: &Versions{
-      Version: "4.6.2", 
-      Disabled: true,
-      DisableMessage: "Disabled by admin"}})
-  // insert data into postgres     
-  // for _, item := range apps {
-  //   // remove id as its a primary key 
-  //   sqlStatment := `INSERT INTO apps (id, appname, disabled, globaldisablemessage)
-  //   VALUES ($1, $2, $3, $4)
-  //   RETURNING id;`
-  //   //fmt.Println(sqlStatment, item.ID, item.Appname, item.Disabled, item.GlobalDisableMessage)
-  //   id :=0
-  //   err = db.QueryRow(sqlStatment, item.ID, item.Appname, item.Disabled, item.GlobalDisableMessage).Scan(&id)
-  //   if err != nil {
-  //     fmt.Println("Insert failed")
-  //     fmt.Println(err)
-  //     panic(err)
-  //   }
-  //   fmt.Println("New record ID is :", id)
-  // }
+// // DeleteApp delete app by id app/:id
+// func DeleteApp(c echo.Context) error {
+// 	id := c.Param("id")
+// 	sqlStatment := "DELETE FROM apps WHERE id = $1"
+// 	res, err := d.Query(sqlStatment, id)
+// 	if err != nil{
+// 		fmt.Println(err)
+// 	} else {
+// 		fmt.Println(res)
+// 		return c.JSON(http.StatusOK, "Deleted")
+// 	}
+// 	return c.JSON(http.StatusOK, "Deleted")
+// }
 
-    
-}
