@@ -48,10 +48,10 @@ func main() {
 	})
 
 	router.GET("/apps", GetAllApps)
-	// router.GET("/apps/:id", GetApp)
-	// router.PUT("/apps/:id", UpdateApp)
-	// router.POST("/apps", CreateApp)
-	// router.DELETE("/apps/:id", DeleteApp)
+	router.GET("/apps/:id", GetApp)
+	router.PUT("/apps/:id", UpdateApp)
+	router.POST("/apps", CreateApp)
+	router.DELETE("/apps/:id", DeleteApp)
 
 	router.Logger.Fatal(router.Start(":8001"))
 }
