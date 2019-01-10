@@ -91,3 +91,28 @@ func UpdateApp(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, app.ID)
 }
+
+// CreateApp post json to create app in postgres db e.g. object
+// {
+// 	"Appname": "Minishift-RHMAP",
+// 	"Disabled": true,
+// 	"globalDisableMessage": "disabled by API insomnia"
+// }
+func CreateApp(c echo.Context) error {
+	var app = new(App)
+	if err := c.Bind(app); err != nil {
+		fmt.Println(err)
+		return err
+	}
+	sqlStatment := "INSERT INTO apps (appname, disabled, globaldisablemessage)VALUES ($1,$2,$3)"
+	res, err :=d.Query(sqlStatment,app.Appname, app.Disabled, app.GlobalDisableMessage)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(res)
+		return c.JSON(http.StatusCreated, app)
+	}
+
+	return c.JSON(http.StatusOK, app.ID)
+
+}
