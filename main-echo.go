@@ -51,6 +51,7 @@ func main() {
 	router.GET("/apps/:id", GetApp)
 	router.PUT("/apps/:id", UpdateApp)
 	router.POST("/apps", CreateApp)
+	router.DELETE("/apps/:id", DeleteApp)
 
 	router.Logger.Fatal(router.Start(":8001"))
 }
@@ -151,6 +152,20 @@ func CreateApp(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, app.ID)
 
+}
+
+// DeleteApp delete app by id app/:id
+func DeleteApp(c echo.Context) error {
+	id := c.Param("id")
+	sqlStatment := "DELETE FROM apps WHERE id = $1"
+	res, err := db.Query(sqlStatment, id)
+	if err != nil{
+		fmt.Println(err)
+	} else {
+		fmt.Println(res)
+		return c.JSON(http.StatusOK, "Deleted")
+	}
+	return c.JSON(http.StatusOK, "Deleted")
 }
 
 // no real difference here
