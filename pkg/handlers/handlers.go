@@ -50,3 +50,17 @@ func GetAllApps(c echo.Context) error {
 	// returns new object
 	return c.JSON(http.StatusOK, result)
 }
+
+// // GetApp gets an app by id
+func GetApp(c echo.Context) error {
+	id := c.Param("id")
+	fmt.Println("id passed in : ", id)
+	var app App
+	sqlStatment := `SELECT id, appname, disabled, globaldisablemessage FROM apps WHERE id=$1;`
+	row := d.QueryRow(sqlStatment, id)
+	err := row.Scan(&app.ID, &app.Appname, &app.Disabled, &app.GlobalDisableMessage)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, app)
+}
