@@ -1,15 +1,15 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"net/http"
 	"github.com/labstack/echo"
 	_ "github.com/lib/pq"
+	"github.com/austincunningham/go-react/pkg/db"
 )
 
 // posgres vars should be using env vars for this
-var db *sql.DB
+//var db *sql.DB
 
 const (
 	dbhost = "localhost"
@@ -35,11 +35,11 @@ type Versions struct {
 	DisableMessage string `json:"disableMessage,omitempty"`
 }
 
-var apps []App
-
+//var apps []App
+var d = db.DBconnect()
 func main() {
-	dbConnect()
-	defer db.Close()
+	//d := db.DBconnect()
+	defer d.Close()
 
 	router := echo.New()
 	// non database route
@@ -48,10 +48,10 @@ func main() {
 	})
 
 	router.GET("/apps", GetAllApps)
-	router.GET("/apps/:id", GetApp)
-	router.PUT("/apps/:id", UpdateApp)
-	router.POST("/apps", CreateApp)
-	router.DELETE("/apps/:id", DeleteApp)
+	// router.GET("/apps/:id", GetApp)
+	// router.PUT("/apps/:id", UpdateApp)
+	// router.POST("/apps", CreateApp)
+	// router.DELETE("/apps/:id", DeleteApp)
 
 	router.Logger.Fatal(router.Start(":8001"))
 }
@@ -60,7 +60,7 @@ func main() {
 func GetAllApps(c echo.Context) error {
 	// returning static apps array
 	sqlStatment := "SELECT id, appname, disabled, globaldisablemessage FROM apps order by id"
-	rows, err := db.Query(sqlStatment)
+	rows, err := d.Query(sqlStatment)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -86,7 +86,7 @@ func GetApp(c echo.Context) error {
 	fmt.Println("id passed in : ", id)
 	var app App
 	sqlStatment := `SELECT id, appname, disabled, globaldisablemessage FROM apps WHERE id=$1;`
-	row := db.QueryRow(sqlStatment, id)
+	row := d.QueryRow(sqlStatment, id)
 	err := row.Scan(&app.ID, &app.Appname, &app.Disabled, &app.GlobalDisableMessage)
 	if err != nil {
 		return err
@@ -110,7 +110,7 @@ func UpdateApp(c echo.Context) error {
 		return err
 	}
 	sqlStatment := "UPDATE apps SET appname=$1, disabled=$2, globaldisablemessage=$3 WHERE id=$4"
-	res, err := db.Query(sqlStatment, app.Appname, app.Disabled, app.GlobalDisableMessage, app.ID)
+	res, err := d.Query(sqlStatment, app.Appname, app.Disabled, app.GlobalDisableMessage, app.ID)
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -134,7 +134,7 @@ func CreateApp(c echo.Context) error {
 		return err
 	}
 	sqlStatment := "INSERT INTO apps (appname, disabled, globaldisablemessage)VALUES ($1,$2,$3)"
-	res, err :=db.Query(sqlStatment,app.Appname, app.Disabled, app.GlobalDisableMessage)
+	res, err :=d.Query(sqlStatment,app.Appname, app.Disabled, app.GlobalDisableMessage)
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -150,7 +150,7 @@ func CreateApp(c echo.Context) error {
 func DeleteApp(c echo.Context) error {
 	id := c.Param("id")
 	sqlStatment := "DELETE FROM apps WHERE id = $1"
-	res, err := db.Query(sqlStatment, id)
+	res, err := d.Query(sqlStatment, id)
 	if err != nil{
 		fmt.Println(err)
 	} else {
@@ -160,20 +160,3 @@ func DeleteApp(c echo.Context) error {
 	return c.JSON(http.StatusOK, "Deleted")
 }
 
-// DbConnect Connect to postgres database
-func dbConnect() {
-	var err error
-	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
-		"password=%s dbname=%s sslmode=disable", dbhost, dbport, dbuser, dbpass, dbname)
-
-	db, err = sql.Open("postgres", psqlInfo)
-	if err != nil {
-		//using panic may not be best practice
-		panic(err)
-	}
-	err = db.Ping()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Successfully connected to Posgres DB!")
-}
