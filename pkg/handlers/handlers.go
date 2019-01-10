@@ -64,3 +64,30 @@ func GetApp(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, app)
 }
+
+// UpdateApp based on id app/:id, e.g. object
+// {
+//  "id":"1"
+// 	"Appname": "Minishift-RHMAP",
+// 	"Disabled": true,
+// 	"globalDisableMessage": "disabled by API insomnia"
+// }
+func UpdateApp(c echo.Context) error {
+	id := c.Param("id")
+	fmt.Println("id passed in : ", id)
+	var app = new(App)
+	if err := c.Bind(app); err != nil {
+		fmt.Println(err)
+		return err
+	}
+	sqlStatment := "UPDATE apps SET appname=$1, disabled=$2, globaldisablemessage=$3 WHERE id=$4"
+	res, err := d.Query(sqlStatment, app.Appname, app.Disabled, app.GlobalDisableMessage, app.ID)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(res)
+		return c.JSON(http.StatusCreated, app)
+	}
+
+	return c.JSON(http.StatusOK, app.ID)
+}
