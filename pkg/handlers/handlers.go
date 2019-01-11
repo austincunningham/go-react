@@ -6,26 +6,12 @@ import (
 	"github.com/labstack/echo"
 	_ "github.com/lib/pq"
 	"github.com/austincunningham/go-react/pkg/db"
+	models "github.com/austincunningham/go-react/pkg/models"
 )
 
+var apps []models.App
+
 var d = db.DBconnect()
-//App struct
-type App struct {
-	ID                   string    `json:"id,omitempty"`
-	Appname              string    `json:"Appname,omitempty"`
-	Disabled             bool      `json:"disabled,omitempty"`
-	GlobalDisableMessage string    `json:"globalDisableMessage,omitempty"`
-	Versions             *Versions `json:"versions,omitempty"`
-}
-
-//Versions struct
-type Versions struct {
-	Version        string `json:"version,omitempty"`
-	Disabled       bool   `json:"disabled,omitempty"`
-	DisableMessage string `json:"disableMessage,omitempty"`
-}
-
-var apps []App
 
 // GetAllApps gets all apps
 func GetAllApps(c echo.Context) error {
@@ -38,9 +24,9 @@ func GetAllApps(c echo.Context) error {
 	defer rows.Close()
 
 	// creates a new object from return from postgres
-	var result []App
+	var result []models.App
 	for rows.Next() {
-		var app App
+		var app models.App
 		err2 := rows.Scan(&app.ID, &app.Appname, &app.Disabled, &app.GlobalDisableMessage)
 		if err2 != nil {
 			return err2
@@ -55,7 +41,7 @@ func GetAllApps(c echo.Context) error {
 func GetApp(c echo.Context) error {
 	id := c.Param("id")
 	fmt.Println("id passed in : ", id)
-	var app App
+	var app models.App
 	sqlStatment := `SELECT id, appname, disabled, globaldisablemessage FROM apps WHERE id=$1;`
 	row := d.QueryRow(sqlStatment, id)
 	err := row.Scan(&app.ID, &app.Appname, &app.Disabled, &app.GlobalDisableMessage)
@@ -75,7 +61,7 @@ func GetApp(c echo.Context) error {
 func UpdateApp(c echo.Context) error {
 	id := c.Param("id")
 	fmt.Println("id passed in : ", id)
-	var app = new(App)
+	var app = new(models.App)
 	if err := c.Bind(app); err != nil {
 		fmt.Println(err)
 		return err
@@ -99,7 +85,7 @@ func UpdateApp(c echo.Context) error {
 // 	"globalDisableMessage": "disabled by API insomnia"
 // }
 func CreateApp(c echo.Context) error {
-	var app = new(App)
+	var app = new(models.App)
 	if err := c.Bind(app); err != nil {
 		fmt.Println(err)
 		return err
