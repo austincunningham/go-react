@@ -31,8 +31,8 @@ http://localhost:8001/ will return `hello world`
 
 # API
 
-- GET "/apps" Get all apps in apps table
-- GET "/apps/:id" Get an app by id in apps table
-- PUT "/apps/:id" Update an app in apps table
-- POST "/apps" Create an new app in apps table
-- DELETE "/apps/:id" Delete an app in apps table
+- GET `/apps` Get all apps in apps table
+- GET `/apps/:id` Get an app by id in apps table
+- PUT `/apps/:id` Update an app in apps table
+- POST `/apps` Create an new app in apps table
+- DELETE `/apps/:id` Delete an app in apps table
