@@ -4,7 +4,7 @@ I am building a golang backend and a react front end spa mainly as a learning ex
 
 # Prerequisites 
 
-At the moment it is pointing at a local Postgres server, I used this godaddy tutorial for setting up [postgres]  (https://www.godaddy.com/garage/how-to-install-postgresql-on-ubuntu-14-04/)  
+At the moment it is pointing at a local Postgres server, I used this godaddy tutorial for setting up [postgres](https://www.godaddy.com/garage/how-to-install-postgresql-on-ubuntu-14-04/)  
 
 table setup 
 ```bash
