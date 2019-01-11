@@ -2,12 +2,9 @@ package main
 
 import (
 	"net/http"
-
-	
 	"github.com/austincunningham/go-react/pkg/handlers"
 	"github.com/labstack/echo"
-	_ "github.com/lib/pq"
-)
+	)
 
 
 

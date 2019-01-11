@@ -4,10 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+
 )
 // posgres vars should be using env vars for this
-//var DB *sql.DB
-
 const (
 	dbhost = "localhost"
 	dbport = "5432"
@@ -15,13 +14,6 @@ const (
 	dbpass = "password"
 	dbname = "postgres"
 )
-
-type(
-	AppModel struct {
-		db *sql.DB
-	}
-)
-
 
 // DbConnect Connect to postgres database
 func DBconnect() *sql.DB{
