@@ -37,7 +37,7 @@ func GetAllApps(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
-// // GetApp gets an app by id
+// GetApp gets an app by id
 func GetApp(c echo.Context) error {
 	id := c.Param("id")
 	fmt.Println("id passed in : ", id)

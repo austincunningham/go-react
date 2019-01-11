@@ -4,9 +4,7 @@ import (
 	"net/http"
 	"github.com/austincunningham/go-react/pkg/handlers"
 	"github.com/labstack/echo"
-	)
-
-
+)
 
 func main() {
 	router := echo.New()
